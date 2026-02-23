@@ -6,7 +6,7 @@
   <title>自由定价 — 提前退休顾问</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=DM+Mono:ital,wght@0,400;0,500;1,300&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=DM+Mono:ital,wght@0,400;0,500;1,300&family=Noto+Serif+SC:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
   <style>
     /* =====================================================================
@@ -70,6 +70,63 @@
       color: var(--muted);
     }
 
+    /* ---- Home entrance animations ---- */
+    @keyframes heroBlurUp {
+      0%   { opacity: 0; transform: translateY(28px); filter: blur(14px); letter-spacing: 0.06em; }
+      100% { opacity: 1; transform: translateY(0);    filter: blur(0);    letter-spacing: -0.02em; }
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ruleGrow {
+      from { opacity: 0; width: 0; }
+      to   { opacity: 1; width: 36px; }
+    }
+    @keyframes scItemIn {
+      from { opacity: 0; transform: translateX(18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ---- Splash overlay ---- */
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      transition: opacity 0.45s ease;
+    }
+    #splash-ziyu {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: clamp(110px, 28vw, 180px);
+      color: var(--cream);
+      letter-spacing: -0.02em; line-height: 0.9;
+      opacity: 0;
+      transform-origin: center center;
+      will-change: transform, opacity;
+      transition: opacity 0.5s ease;
+    }
+
+    /* ---- Home elements: start hidden, JS reveals ---- */
+    .home-masthead,
+    .hero-kicker,
+    .hero-rule,
+    .hero-copy {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    #hero-ziyu {
+      opacity: 0;
+      display: inline;
+      transition: opacity 0.01s;
+    }
+    #hero-jihe {
+      opacity: 0;
+      display: inline;
+      transition: opacity 0.6s ease;
+    }
+
     .home-hero { padding: 52px 28px 0; }
 
     .hero-kicker {
@@ -90,9 +147,12 @@
     .hero-title em {
       font-style: normal;
       color: var(--gold);
+      font-weight: 300;
     }
 
-    .hero-rule { width: 36px; height: 1px; background: var(--gold); margin-bottom: 24px; }
+    .hero-rule {
+      width: 36px; height: 1px; background: var(--gold); margin-bottom: 24px;
+    }
 
     .hero-copy {
       font-size: 14px; color: var(--muted2);
@@ -104,6 +164,9 @@
     .sc-header {
       padding: 0 28px 14px;
       display: flex; align-items: center; gap: 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
     }
     .sc-header-label {
       font-family: 'DM Mono', monospace;
@@ -119,8 +182,10 @@
       border-bottom: 1px solid var(--border);
       cursor: pointer; position: relative;
       display: flex; align-items: center; gap: 20px;
-      transition: background 0.15s;
       -webkit-tap-highlight-color: transparent;
+      opacity: 0;
+      transform: translateX(16px);
+      transition: opacity 0.55s ease, transform 0.55s ease, background 0.15s;
     }
     .sc-item:first-child { border-top: 1px solid var(--border); }
     .sc-item::before {
@@ -680,6 +745,11 @@
      HOME
 =============================================================== -->
 <div id="page-home" class="page active">
+  <!-- Splash -->
+  <div id="splash">
+    <div id="splash-ziyu">自由</div>
+  </div>
+
   <div class="home-masthead">
     <div class="masthead-brand">提前退休顾问</div>
     <div class="masthead-tag">Beijing · 2024</div>
@@ -687,7 +757,7 @@
 
   <div class="home-hero">
     <div class="hero-kicker">量化你的选择<div class="hero-kicker-line"></div></div>
-    <div class="hero-title">自由<em>几何？</em></div>
+    <div class="hero-title"><span id="hero-ziyu">自由</span><em id="hero-jihe">几何？</em></div>
     <div class="hero-rule"></div>
     <p class="hero-copy">
       提前退休不是梦想，是一道算术题。<br>
@@ -1384,6 +1454,61 @@ function renderAdvice(r) {
     </div>
   `;
 }
+
+// ---- Splash animation ----
+function runSplash() {
+  const splash     = document.getElementById('splash');
+  const splashZiyu = document.getElementById('splash-ziyu');
+  const heroZiyu   = document.getElementById('hero-ziyu');
+  const heroJihe   = document.getElementById('hero-jihe');
+
+  function revealEl(el, delay) {
+    setTimeout(() => {
+      el.style.opacity   = '1';
+      el.style.transform = 'none';
+    }, delay);
+  }
+
+  // Fade in the big "自由" on the splash screen
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      splashZiyu.style.opacity = '1';
+    });
+  });
+
+  // After 900ms, do the FLIP: shrink "自由" into its hero position
+  setTimeout(() => {
+    const tgt = heroZiyu.getBoundingClientRect();
+    const src = splashZiyu.getBoundingClientRect();
+    const scale = tgt.height / src.height;
+    const dx = (tgt.left + tgt.width  / 2) - (src.left + src.width  / 2);
+    const dy = (tgt.top  + tgt.height / 2) - (src.top  + src.height / 2);
+
+    splashZiyu.style.transition = 'transform 0.72s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.2s 0.55s ease';
+    splashZiyu.style.transform  = `translate(${dx}px, ${dy}px) scale(${scale})`;
+
+    // When FLIP lands: swap to real title, fade out splash
+    setTimeout(() => {
+      heroZiyu.style.opacity = '1';      // reveal real "自由" underneath
+      splash.style.opacity   = '0';      // fade away overlay
+      setTimeout(() => {
+        splash.style.display = 'none';   // remove from stacking context
+        // Cascade the rest of the home page
+        heroJihe.style.opacity = '1';                            // "几何？"
+        revealEl(document.querySelector('.home-masthead'), 120);
+        revealEl(document.querySelector('.hero-kicker'),   260);
+        revealEl(document.querySelector('.hero-rule'),     420);
+        revealEl(document.querySelector('.hero-copy'),     560);
+        revealEl(document.querySelector('.sc-header'),     740);
+        document.querySelectorAll('.sc-item').forEach((el, i) => {
+          revealEl(el, 920 + i * 150);
+        });
+      }, 450); // wait for splash fade
+    }, 750);   // wait for FLIP
+  }, 900);     // splash hold time
+}
+
+window.addEventListener('load', runSplash);
 </script>
 </body>
 </html>
