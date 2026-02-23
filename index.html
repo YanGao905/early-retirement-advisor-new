@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>自由定价 — 提前退休顾问</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=DM+Mono:ital,wght@0,400;0,500;1,300&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* =====================================================================
+       TOKENS
+    ====================================================================== */
+    :root {
+      --bg:       #0C0C0E;
+      --bg2:      #111114;
+      --bg3:      #18181C;
+      --bg4:      #222228;
+      --gold:     #D4A853;
+      --gold-hi:  #E8C97D;
+      --gold-dim: rgba(212,168,83,0.10);
+      --gold-bdr: rgba(212,168,83,0.18);
+      --cream:    #EDE8DC;
+      --muted:    #5C5C68;
+      --muted2:   #8C8C9C;
+      --border:   rgba(255,255,255,0.06);
+      --border2:  rgba(255,255,255,0.04);
+      --green:    #5DB87A;
+      --red:      #C85E5E;
+      --amber:    #C8924A;
+      --blue:     #5B88D8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* Subtle noise grain */
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+    }
+    ::-webkit-scrollbar { width: 0; }
+
+    .app { max-width: 672px; margin: 0 auto; min-height: 100vh; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* =====================================================================
+       HOME
+    ====================================================================== */
+    .home-masthead {
+      padding: 32px 28px 0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .masthead-brand {
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-size: 14px;
+      color: var(--gold); letter-spacing: 0.01em;
+    }
+    .masthead-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .home-hero { padding: 52px 28px 0; }
+
+    .hero-kicker {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--gold);
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+    }
+    .hero-kicker-line { flex: 1; height: 1px; background: var(--gold-bdr); }
+
+    .hero-title {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900; font-size: 80px; line-height: 0.9;
+      letter-spacing: -0.02em; color: var(--cream);
+      margin-bottom: 36px;
+    }
+    .hero-title em {
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-weight: 700;
+      color: var(--gold);
+    }
+
+    .hero-rule { width: 36px; height: 1px; background: var(--gold); margin-bottom: 24px; }
+
+    .hero-copy {
+      font-size: 14px; color: var(--muted2);
+      line-height: 1.85; max-width: 310px;
+      margin-bottom: 56px;
+    }
+
+    /* Scenario section */
+    .sc-header {
+      padding: 0 28px 14px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .sc-header-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); white-space: nowrap;
+    }
+    .sc-header-line { flex: 1; height: 1px; background: var(--border); }
+
+    .sc-stack { padding: 0 28px 64px; display: flex; flex-direction: column; }
+
+    .sc-item {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; position: relative;
+      display: flex; align-items: center; gap: 20px;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-item:first-child { border-top: 1px solid var(--border); }
+    .sc-item::before {
+      content: '';
+      position: absolute; left: -28px; right: -28px; top: 0; bottom: 0;
+      background: transparent;
+      transition: background 0.15s;
+      pointer-events: none;
+    }
+    .sc-item:hover::before { background: rgba(212,168,83,0.04); }
+    .sc-item:active::before { background: rgba(212,168,83,0.08); }
+
+    .sc-item-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 44px; font-weight: 900;
+      color: rgba(212,168,83,0.12);
+      line-height: 1; flex-shrink: 0; width: 64px;
+      letter-spacing: -0.03em;
+      transition: color 0.2s;
+    }
+    .sc-item:hover .sc-item-num { color: rgba(212,168,83,0.22); }
+
+    .sc-item-body { flex: 1; }
+    .sc-item-name {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 17px; font-weight: 700;
+      color: var(--cream); margin-bottom: 4px;
+    }
+    .sc-item-desc {
+      font-size: 12px; color: var(--muted2); line-height: 1.6;
+    }
+
+    .sc-item-meta {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;
+    }
+    .sc-item-age {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .sc-item-arrow {
+      font-size: 16px; color: var(--gold); opacity: 0.4;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .sc-item:hover .sc-item-arrow { opacity: 1; transform: translateX(3px); }
+
+    /* =====================================================================
+       FORM
+    ====================================================================== */
+    .form-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(12,12,14,0.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .form-prog { height: 1px; background: var(--border); position: relative; overflow: visible; }
+    .form-prog-fill {
+      position: absolute; top: 0; left: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 8px rgba(212,168,83,0.6);
+    }
+
+    .form-bar-inner {
+      padding: 16px 28px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .form-back {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.10em;
+      color: var(--muted); cursor: pointer;
+      transition: color 0.15s; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .form-back:hover { color: var(--gold); }
+
+    .step-markers { display: flex; align-items: center; gap: 0; flex: 1; justify-content: flex-end; }
+    .step-mark {
+      display: flex; align-items: center; gap: 0;
+    }
+    .step-mark-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--bg4); border: 1px solid var(--muted);
+      transition: all 0.25s;
+    }
+    .step-mark.active .step-mark-dot  { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,83,0.15); }
+    .step-mark.done   .step-mark-dot  { background: var(--green); border-color: var(--green); }
+    .step-mark-connector {
+      width: 20px; height: 1px;
+      background: var(--border);
+      margin: 0 4px;
+      transition: background 0.25s;
+    }
+    .step-mark.done + .step-mark .step-mark-connector { background: var(--green); }
+
+    .step-mark-lbl {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em;
+      color: var(--muted); margin-left: 5px;
+      transition: color 0.25s;
+    }
+    .step-mark.active .step-mark-lbl { color: var(--gold-hi); }
+    .step-mark.done   .step-mark-lbl { color: var(--green); }
+
+    /* Form content */
+    .form-content { padding: 40px 28px 140px; }
+
+    .form-sc-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold);
+      padding: 5px 12px;
+      border: 1px solid var(--gold-bdr);
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+
+    .form-step-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 32px; font-weight: 900;
+      color: var(--cream); margin-bottom: 6px; line-height: 1.15;
+    }
+    .form-step-sub {
+      font-size: 13px; color: var(--muted2);
+      line-height: 1.75; margin-bottom: 44px;
+    }
+
+    /* Underline fields */
+    .fields { display: flex; flex-direction: column; gap: 36px; }
+
+    .f-block { display: flex; flex-direction: column; gap: 10px; }
+    .f-lbl {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .f-lbl-note {
+      font-size: 9px; letter-spacing: 0.04em; text-transform: none;
+      color: var(--muted); font-style: italic;
+    }
+
+    .f-row { display: flex; gap: 20px; }
+    .f-row .f-underline { flex: 1; }
+
+    .f-underline {
+      position: relative;
+      padding-bottom: 10px;
+    }
+    .f-underline::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 1px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .f-underline:focus-within::after { background: var(--gold); box-shadow: 0 1px 6px rgba(212,168,83,0.25); }
+
+    .f-input {
+      background: transparent; border: none; outline: none; width: 100%;
+      font-family: 'DM Mono', monospace;
+      font-size: 26px; font-weight: 500;
+      color: var(--cream);
+      caret-color: var(--gold);
+    }
+    .f-input::placeholder { color: var(--bg4); }
+
+    .f-select-wrap {
+      position: relative;
+      padding-bottom: 10px;
+    }
+    .f-select-wrap::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 1px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .f-select-wrap:focus-within::after { background: var(--gold); }
+    .f-select-arrow {
+      position: absolute; right: 4px; bottom: 16px;
+      color: var(--gold); pointer-events: none;
+      font-size: 12px;
+    }
+    .f-select {
+      background: transparent; border: none; outline: none; width: 100%;
+      appearance: none; -webkit-appearance: none;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 18px; font-weight: 600;
+      color: var(--cream); cursor: pointer;
+      padding-right: 22px;
+    }
+    .f-select option { background: #1A1A1E; color: var(--cream); }
+
+    .f-lookup {
+      padding: 12px 14px;
+      border-left: 1px solid var(--gold-bdr);
+      font-size: 12px; color: var(--muted2); line-height: 1.75;
+    }
+    .f-lookup strong { color: var(--gold-hi); display: block; margin-bottom: 2px; }
+
+    .f-tier-row {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .f-tier {
+      flex: 1; padding: 10px 8px; text-align: center;
+      border: 1px solid var(--border); border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .f-tier:hover { border-color: var(--gold-bdr); background: var(--gold-dim); }
+    .f-tier.active { border-color: var(--gold); background: var(--gold-dim); }
+    .f-tier.active .f-tier-n { color: var(--gold); }
+    .f-tier.active .f-tier-v { color: var(--gold-hi); }
+    .f-tier-n { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .f-tier-v { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--cream); }
+
+    /* Bottom nav */
+    .form-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-width: 672px; margin: 0 auto;
+      padding: 18px 28px calc(18px + env(safe-area-inset-bottom));
+      background: rgba(12,12,14,0.98);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border);
+      display: flex; gap: 12px; z-index: 200;
+    }
+    .btn-sec {
+      padding: 15px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; letter-spacing: 0.08em;
+      color: var(--muted); cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-sec:hover { border-color: var(--gold-bdr); color: var(--gold); }
+
+    .btn-pri {
+      flex: 1; padding: 16px;
+      background: var(--gold);
+      border: none; border-radius: 3px;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--bg); cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-pri:hover { background: var(--gold-hi); box-shadow: 0 6px 24px rgba(212,168,83,0.28); transform: translateY(-1px); }
+    .btn-pri:active { transform: scale(0.98); }
+
+    /* =====================================================================
+       RESULTS
+    ====================================================================== */
+    .res-cover {
+      position: relative; overflow: hidden;
+      padding: 56px 28px 52px;
+      border-bottom: 1px solid var(--border);
+      min-height: 52vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+
+    /* Grid texture behind cover */
+    .res-cover-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    /* Radial glow */
+    .res-cover-glow {
+      position: absolute; top: -40px; left: -60px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .res-back {
+      position: absolute; top: 32px; left: 28px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer;
+      transition: color 0.15s; z-index: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .res-back:hover { color: var(--gold); }
+
+    .res-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 16px; position: relative; z-index: 1;
+    }
+
+    .res-stmt {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 18px; font-weight: 400;
+      color: var(--muted2); margin-bottom: 8px;
+      position: relative; z-index: 1;
+    }
+
+    .res-num-row { display: flex; align-items: baseline; gap: 0; position: relative; z-index: 1; }
+    .res-big {
+      font-family: 'DM Mono', monospace;
+      font-weight: 500; font-size: 72px;
+      color: var(--gold); line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .res-unit {
+      font-family: 'DM Mono', monospace;
+      font-size: 20px; color: var(--muted2);
+      margin-left: 6px;
+    }
+
+    .res-foot {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.06em;
+      color: var(--muted); margin-top: 12px;
+      position: relative; z-index: 1;
+    }
+
+    /* Modules */
+    .res-body { padding: 20px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+
+    .mod {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: 20px;
+      animation: modIn 0.5s ease both;
+    }
+    .mod:nth-child(1) { animation-delay: 0.04s; }
+    .mod:nth-child(2) { animation-delay: 0.08s; }
+    .mod:nth-child(3) { animation-delay: 0.13s; }
+    .mod:nth-child(4) { animation-delay: 0.18s; }
+    .mod:nth-child(5) { animation-delay: 0.23s; }
+    .mod:nth-child(6) { animation-delay: 0.28s; }
+    .mod:nth-child(7) { animation-delay: 0.33s; }
+    .mod:nth-child(8) { animation-delay: 0.38s; }
+    .mod:nth-child(9) { animation-delay: 0.43s; }
+
+    @keyframes modIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .mod-h {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .mod-h::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Module: Retire age */
+    .retire-row { display: flex; align-items: flex-end; gap: 10px; }
+    .retire-yr {
+      font-family: 'Playfair Display', serif;
+      font-size: 80px; font-weight: 900;
+      color: var(--gold); line-height: 0.85;
+    }
+    .retire-yr-note { padding-bottom: 6px; }
+    .retire-suffix { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--muted2); }
+    .retire-mo { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .retire-policy { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+
+    /* Module: Timeline */
+    .tl { padding: 4px 0 4px; }
+    .tl-track {
+      height: 4px; background: var(--bg4); border-radius: 2px;
+      display: flex; overflow: hidden; margin-bottom: 16px;
+    }
+    .tl-seg { height: 100%; }
+    .tl-w { background: var(--blue); }
+    .tl-f { background: var(--green); }
+    .tl-r { background: var(--muted); }
+
+    .tl-dots-row {
+      display: flex; justify-content: space-between;
+      position: relative; margin-bottom: 8px;
+    }
+    .tl-node { text-align: center; }
+    .tl-node-age {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px; color: var(--cream); font-weight: 500;
+    }
+    .tl-node-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .tl-legend {
+      display: flex; gap: 16px; padding-top: 14px;
+      border-top: 1px solid var(--border); margin-top: 4px;
+    }
+    .tl-leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted2); }
+    .tl-leg-d { width: 8px; height: 2px; border-radius: 1px; }
+
+    /* Module: Compare cards */
+    .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cmp-c {
+      background: var(--bg3); border-radius: 4px;
+      padding: 16px; border: 1px solid var(--border);
+    }
+    .cmp-c.on { border-color: var(--gold-bdr); background: rgba(212,168,83,0.04); }
+    .cmp-ch {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px;
+    }
+    .cmp-c.on .cmp-ch { color: var(--gold); }
+    .cmp-m { margin-bottom: 10px; }
+    .cmp-m:last-child { margin-bottom: 0; }
+    .cmp-ml { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+    .cmp-mv {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px; color: var(--cream);
+    }
+    .cmp-mv.g { color: var(--green); }
+    .cmp-mv.r { color: var(--red); }
+
+    /* Module: Tradeoff */
+    .to { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 10px; align-items: center; }
+    .to-side {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 16px; text-align: center;
+    }
+    .to-emoji { font-size: 26px; margin-bottom: 8px; }
+    .to-lbl { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .to-val { font-family: 'DM Mono', monospace; font-size: 18px; }
+    .to-mid {
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 12px; color: var(--muted); text-align: center;
+    }
+    .to-verdict {
+      margin-top: 12px; padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: 4px;
+      font-size: 13px; color: var(--muted2); line-height: 1.8; text-align: center;
+    }
+
+    /* Breakdown rows */
+    .bd { display: flex; flex-direction: column; }
+    .bd-r {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 10px 0; border-bottom: 1px solid var(--border2); gap: 12px;
+    }
+    .bd-r:last-child { border-bottom: none; }
+    .bd-l { font-size: 13px; color: var(--muted2); line-height: 1.5; }
+    .bd-v { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--cream); white-space: nowrap; }
+    .bd-v.g { color: var(--green); }
+    .bd-sep { height: 1px; background: var(--border); margin: 4px 0; }
+    .bd-tot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 2px; }
+    .bd-tot-l { font-size: 14px; font-weight: 700; color: var(--cream); }
+    .bd-tot-v { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--gold); }
+
+    .bd-bar-wrap { margin: 12px 0; }
+    .bd-bar { height: 2px; background: var(--bg4); }
+    .bd-bar-f { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); }
+    .bd-bar-ls {
+      display: flex; justify-content: space-between; margin-top: 6px;
+      font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted);
+    }
+
+    .opp-callout {
+      margin-top: 16px; padding: 18px;
+      border: 1px solid var(--gold-bdr);
+      border-radius: 4px; text-align: center;
+      background: var(--gold-dim);
+    }
+    .opp-cl {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 6px;
+    }
+    .opp-cv { font-family: 'DM Mono', monospace; font-size: 38px; color: var(--gold-hi); }
+    .opp-cf { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    /* Traps */
+    .trap {
+      border-radius: 3px; padding: 14px;
+      display: flex; gap: 12px; margin-bottom: 8px;
+    }
+    .trap:last-child { margin-bottom: 0; }
+    .trap.w { background: rgba(200,146,74,0.07); border: 1px solid rgba(200,146,74,0.18); }
+    .trap.d { background: rgba(200,94,94,0.07); border: 1px solid rgba(200,94,94,0.18); }
+    .trap-i { font-size: 16px; flex-shrink: 0; padding-top: 1px; }
+    .trap-t { font-size: 13px; font-weight: 700; color: var(--cream); margin-bottom: 3px; }
+    .trap-d { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+    .no-trap {
+      text-align: center; padding: 16px;
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      color: var(--green); letter-spacing: 0.06em;
+    }
+
+    /* Detail table */
+    .dt { width: 100%; border-collapse: collapse; }
+    .dt th {
+      text-align: left; padding: 8px 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); border-bottom: 1px solid var(--border);
+    }
+    .dt th:not(:first-child) { text-align: right; }
+    .dt td { padding: 9px 0; border-bottom: 1px solid var(--border2); font-size: 12px; vertical-align: top; }
+    .dt td:first-child { color: var(--muted2); }
+    .dt td:not(:first-child) { text-align: right; font-family: 'DM Mono', monospace; color: var(--cream); }
+    .dt .gold { color: var(--gold); }
+    .dt .grn  { color: var(--green); }
+    .dt .red  { color: var(--red); }
+    .dt tr:last-child td { border-bottom: none; }
+
+    /* Advice */
+    .advice-mod {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 24px;
+      position: relative; overflow: hidden;
+      animation: modIn 0.5s 0.5s ease both;
+    }
+    .advice-glow {
+      position: absolute; top: -60px; right: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .advice-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 10px;
+    }
+    .advice-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--cream); margin-bottom: 14px; line-height: 1.3;
+    }
+    .advice-body { font-size: 14px; color: var(--muted2); line-height: 1.9; }
+
+    /* Restart */
+    .restart-wrap { padding: 16px 20px 56px; }
+    .btn-restart {
+      width: 100%; padding: 18px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-restart:hover { border-color: var(--gold-bdr); color: var(--gold); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+<!-- ==============================================================
+     HOME
+=============================================================== -->
+<div id="page-home" class="page active">
+  <div class="home-masthead">
+    <div class="masthead-brand">提前退休顾问</div>
+    <div class="masthead-tag">Beijing · 2024</div>
+  </div>
+
+  <div class="home-hero">
+    <div class="hero-kicker">量化你的选择<div class="hero-kicker-line"></div></div>
+    <div class="hero-title">自由<em>几何？</em></div>
+    <div class="hero-rule"></div>
+    <p class="hero-copy">
+      提前退休不是梦想，是一道算术题。<br>
+      把"我想自由"翻译成一个你能正视的数字，<br>
+      然后由你来决定——值不值得。
+    </p>
+  </div>
+
+  <div class="sc-header">
+    <div class="sc-header-label">选择你的处境</div>
+    <div class="sc-header-line"></div>
+  </div>
+
+  <div class="sc-stack">
+    <div class="sc-item" onclick="selectScenario(0)">
+      <div class="sc-item-num">25</div>
+      <div class="sc-item-body">
+        <div class="sc-item-name">年轻觉醒者</div>
+        <div class="sc-item-desc">想辞职追求自由，不确定放弃社保是否值得</div>
+      </div>
+      <div class="sc-item-meta">
+        <div class="sc-item-age">25–35</div>
+        <div class="sc-item-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="sc-item" onclick="selectScenario(1)">
+      <div class="sc-item-num">35</div>
+      <div class="sc-item-body">
+        <div class="sc-item-name">中年规划者</div>
+        <div class="sc-item-desc">上有老下有小，需要量化离职成本再做取舍</div>
+      </div>
+      <div class="sc-item-meta">
+        <div class="sc-item-age">35–45</div>
+        <div class="sc-item-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="sc-item" onclick="selectScenario(2)">
+      <div class="sc-item-num">45</div>
+      <div class="sc-item-body">
+        <div class="sc-item-name">临退犹豫者</div>
+        <div class="sc-item-desc">距法定退休没几年，到底硬撑还是潇洒离开？</div>
+      </div>
+      <div class="sc-item-meta">
+        <div class="sc-item-age">45–55</div>
+        <div class="sc-item-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     FORM
+=============================================================== -->
+<div id="page-form" class="page">
+  <div class="form-bar">
+    <div class="form-prog">
+      <div class="form-prog-fill" id="prog-fill"></div>
+    </div>
+    <div class="form-bar-inner">
+      <div class="form-back" onclick="goHome()">← 返回</div>
+      <div class="step-markers" id="step-markers">
+        <div class="step-mark" id="sm-1">
+          <div class="step-mark-dot"></div>
+          <div class="step-mark-lbl">基本</div>
+        </div>
+        <div class="step-mark-connector"></div>
+        <div class="step-mark" id="sm-2">
+          <div class="step-mark-dot"></div>
+          <div class="step-mark-lbl">社保</div>
+        </div>
+        <div class="step-mark-connector"></div>
+        <div class="step-mark" id="sm-3">
+          <div class="step-mark-dot"></div>
+          <div class="step-mark-lbl">意向</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-content">
+    <!-- Step 1 -->
+    <div id="fs-1">
+      <div id="sc-badge" class="form-sc-badge"></div>
+      <div class="form-step-title">基本信息</div>
+      <div class="form-step-sub">用于计算当前年龄与法定退休年龄</div>
+      <div class="fields">
+        <div class="f-block">
+          <div class="f-lbl">出生年月</div>
+          <div class="f-row">
+            <div class="f-select-wrap">
+              <select id="birth-year" class="f-select"></select>
+              <span class="f-select-arrow">▾</span>
+            </div>
+            <div class="f-select-wrap">
+              <select id="birth-month" class="f-select"></select>
+              <span class="f-select-arrow">▾</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">性别 <span class="f-lbl-note">影响法定退休年龄</span></div>
+          <div class="f-select-wrap">
+            <select id="gender" class="f-select">
+              <option value="male">男</option>
+              <option value="female_office">女（管理 / 专业技术岗位）</option>
+              <option value="female_manual">女（工人 / 技工岗位）</option>
+            </select>
+            <span class="f-select-arrow">▾</span>
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">北京户籍 <span class="f-lbl-note">影响4050补贴资格</span></div>
+          <div class="f-select-wrap">
+            <select id="hukou" class="f-select">
+              <option value="beijing">是，北京户口</option>
+              <option value="other">否，非北京户口</option>
+            </select>
+            <span class="f-select-arrow">▾</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="fs-2" style="display:none">
+      <div class="form-step-title">社保状态</div>
+      <div class="form-step-sub">京通APP → 社会保障 → 养老保险 → 参保信息</div>
+      <div class="fields">
+        <div class="f-block">
+          <div class="f-lbl">累计缴费年限（年）</div>
+          <div class="f-underline">
+            <input type="number" id="years-contrib" class="f-input" placeholder="10.0" step="0.5" min="0" max="45" value="10">
+          </div>
+          <div class="f-lookup">
+            <strong>📱 查询路径</strong>
+            京通APP → 社会保障 → 养老保险 → 参保信息 → 累计缴费年限
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">个人账户余额（元）</div>
+          <div class="f-underline">
+            <input type="number" id="personal-acct" class="f-input" placeholder="80000" step="1000" min="0" value="80000">
+          </div>
+          <div class="f-lookup">
+            <strong>📱 查询路径</strong>
+            京通APP → 社会保障 → 养老保险 → 参保信息 → 个人账户累计金额
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">当前缴费基数档位</div>
+          <div class="f-select-wrap">
+            <select id="contrib-tier" class="f-select">
+              <option value="low">低档（月薪约1万以下）</option>
+              <option value="medium" selected>中档（月薪约1–2万）</option>
+              <option value="high">高档（月薪2万以上）</option>
+            </select>
+            <span class="f-select-arrow">▾</span>
+          </div>
+          <div class="f-tier-row" id="tier-row-contrib">
+            <div class="f-tier" onclick="setTier('contrib-tier','low',this)"><div class="f-tier-n">低档</div><div class="f-tier-v">¥7,000</div></div>
+            <div class="f-tier active" onclick="setTier('contrib-tier','medium',this)"><div class="f-tier-n">中档</div><div class="f-tier-v">¥12,000</div></div>
+            <div class="f-tier" onclick="setTier('contrib-tier','high',this)"><div class="f-tier-n">高档</div><div class="f-tier-v">¥24,000</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="fs-3" style="display:none">
+      <div class="form-step-title">退休意向</div>
+      <div class="form-step-sub">告诉我你的计划，我来把账算清楚</div>
+      <div class="fields">
+        <div class="f-block">
+          <div class="f-lbl">当前税前月薪（元）</div>
+          <div class="f-underline">
+            <input type="number" id="salary" class="f-input" placeholder="15000" step="1000" min="0" value="15000">
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">计划退出年龄（岁）</div>
+          <div class="f-underline">
+            <input type="number" id="quit-age" class="f-input" placeholder="45" step="1" min="30" max="65" value="45">
+          </div>
+        </div>
+
+        <div class="f-block">
+          <div class="f-lbl">离职后缴费档位 <span class="f-lbl-note">建议低档，最省钱</span></div>
+          <div class="f-select-wrap">
+            <select id="post-quit-tier" class="f-select">
+              <option value="low" selected>低档 ¥7,000/月（推荐）</option>
+              <option value="medium">中档 ¥12,000/月</option>
+              <option value="high">高档 ¥24,000/月</option>
+            </select>
+            <span class="f-select-arrow">▾</span>
+          </div>
+          <div class="f-lookup">
+            💡 离职后以<strong style="color:var(--gold-hi)">灵活就业人员</strong>身份缴纳。基础养老金计算依赖缴费<em>年限</em>，选低档大幅减少现金流出。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-footer">
+    <button class="btn-sec" id="btn-back" onclick="prevStep()" style="display:none">← 上一步</button>
+    <button class="btn-pri" id="btn-next" onclick="nextStep()">下一步 →</button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     RESULTS
+=============================================================== -->
+<div id="page-results" class="page">
+  <div class="res-cover">
+    <div class="res-cover-grid"></div>
+    <div class="res-cover-glow"></div>
+    <div class="res-back" onclick="goToForm()">← 修改数据</div>
+    <div class="res-eyebrow">自由成本核算结果</div>
+    <div class="res-stmt" id="r-stmt">你的 X.X 年自由</div>
+    <div class="res-num-row">
+      <span class="res-big" id="r-num">¥0</span>
+      <span class="res-unit">/ 年</span>
+    </div>
+    <div class="res-foot" id="r-foot">总机会成本 ÷ 自由年数</div>
+  </div>
+
+  <div class="res-body">
+    <!-- 1. Retire age -->
+    <div class="mod">
+      <div class="mod-h">法定退休年龄</div>
+      <div class="retire-row">
+        <div class="retire-yr" id="r-yr">60</div>
+        <div class="retire-yr-note">
+          <div class="retire-suffix" id="r-suffix">岁</div>
+          <div class="retire-mo" id="r-mo"></div>
+          <div class="retire-policy" id="r-policy"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Timeline -->
+    <div class="mod">
+      <div class="mod-h">人生时间轴</div>
+      <div class="tl">
+        <div class="tl-track" id="tl-track"></div>
+        <div class="tl-dots-row" id="tl-dots"></div>
+        <div class="tl-legend">
+          <div class="tl-leg"><div class="tl-leg-d" style="background:var(--blue)"></div>继续工作</div>
+          <div class="tl-leg"><div class="tl-leg-d" style="background:var(--green)"></div>自由时光</div>
+          <div class="tl-leg"><div class="tl-leg-d" style="background:var(--muted)"></div>退休后</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Compare -->
+    <div class="mod">
+      <div class="mod-h">两种方案对比</div>
+      <div class="cmp" id="cmp"></div>
+    </div>
+
+    <!-- 4. Tradeoff -->
+    <div class="mod">
+      <div class="mod-h">价值权衡</div>
+      <div class="to" id="to"></div>
+      <div class="to-verdict" id="to-verdict"></div>
+    </div>
+
+    <!-- 5. Cost breakdown -->
+    <div class="mod">
+      <div class="mod-h">社保自缴明细</div>
+      <div id="cost-bd"></div>
+    </div>
+
+    <!-- 6. Opp cost -->
+    <div class="mod">
+      <div class="mod-h">机会成本分析</div>
+      <div id="opp-cost"></div>
+    </div>
+
+    <!-- 7. Traps -->
+    <div class="mod">
+      <div class="mod-h">决策陷阱提示</div>
+      <div id="traps"></div>
+    </div>
+
+    <!-- 8. Detail table -->
+    <div class="mod">
+      <div class="mod-h">详细对照表</div>
+      <table class="dt" id="detail-tbl"></table>
+    </div>
+
+    <!-- 9. Advice -->
+    <div id="advice-wrap"></div>
+  </div>
+
+  <div class="restart-wrap">
+    <button class="btn-restart" onclick="goHome()">RESTART — 重新测算</button>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+/* =========================================================
+   TIER SELECTOR
+========================================================= */
+function setTier(selectId, value, el) {
+  document.getElementById(selectId).value = value;
+  el.closest('.f-tier-row').querySelectorAll('.f-tier').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+const BEIJING_AVG_WAGE = 12202;
+const LIFE_EXP = 80;
+const UNEMP_MO = 2250;
+const BASE = { low:7000, medium:12000, high:24000 };
+const DIVISOR = {
+  50:195,51:192,52:188,53:185,54:182,
+  55:178,56:175,57:172,58:169,59:166,
+  60:139,61:132,62:125,63:117
+};
+const SCENARIOS = [
+  { name:'年轻觉醒者', emoji:'🌅' },
+  { name:'中年规划者', emoji:'⚖️' },
+  { name:'临退犹豫者', emoji:'🏁' }
+];
+
+/* =========================================================
+   STATE
+========================================================= */
+let curStep = 1;
+let scenarioIdx = 0;
+let R = null;
+
+/* =========================================================
+   INIT
+========================================================= */
+(function init() {
+  const yr = document.getElementById('birth-year');
+  for (let y = new Date().getFullYear() - 22; y >= 1958; y--)
+    yr.innerHTML += `<option value="${y}"${y===1985?' selected':''}>${y} 年</option>`;
+  const mo = document.getElementById('birth-month');
+  for (let m = 1; m <= 12; m++)
+    mo.innerHTML += `<option value="${m}"${m===6?' selected':''}>${m} 月</option>`;
+})();
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function selectScenario(idx) {
+  scenarioIdx = idx;
+  const sc = SCENARIOS[idx];
+  const b = document.getElementById('sc-badge');
+  b.textContent = sc.emoji + '  ' + sc.name;
+  showStep(1);
+  showPage('page-form');
+}
+
+function goHome()   { showPage('page-home'); }
+function goToForm() { showPage('page-form'); }
+
+function showStep(s) {
+  curStep = s;
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('fs-'+i).style.display = i === s ? 'block' : 'none';
+    const sm = document.getElementById('sm-'+i);
+    sm.className = 'step-mark';
+    if (i < s)      sm.classList.add('done');
+    else if (i === s) sm.classList.add('active');
+  }
+  // Gold progress line
+  const pcts = ['33%','66%','100%'];
+  document.getElementById('prog-fill').style.width = pcts[s-1];
+  document.getElementById('btn-back').style.display = s > 1 ? 'inline-block' : 'none';
+  document.getElementById('btn-next').textContent = s === 3 ? '查看结果 →' : '下一步 →';
+}
+
+function nextStep() { if (curStep < 3) showStep(curStep+1); else calculate(); }
+function prevStep() { if (curStep > 1) showStep(curStep-1); }
+
+/* =========================================================
+   CALCULATION ENGINE
+========================================================= */
+function legalRetireMonths(bY, bM, gender) {
+  const cfg = {
+    male:          { base:60*12, sY:1965, sM:1, rate:4, cap:36 },
+    female_office: { base:55*12, sY:1970, sM:1, rate:4, cap:36 },
+    female_manual: { base:50*12, sY:1975, sM:1, rate:2, cap:60 }
+  };
+  const c = cfg[gender];
+  const birth = bY*12+bM, start = c.sY*12+c.sM;
+  if (birth <= start) return c.base;
+  return c.base + Math.min(Math.floor((birth-start)/c.rate), c.cap);
+}
+
+function getDivisor(ageMonths) {
+  const a = Math.floor(ageMonths/12);
+  return a<50?216:a>63?117:(DIVISOR[a]||139);
+}
+
+function calcPension(yrs, acct, retireM) {
+  const personal = acct / getDivisor(retireM);
+  const basic    = BEIJING_AVG_WAGE * yrs * 0.01 * 0.9;
+  return { personal, basic, total: personal+basic };
+}
+
+function calcUnemp(yrs) {
+  if (yrs < 1) return 0;
+  return (yrs < 5 ? 12 : yrs < 10 ? 18 : 24) * UNEMP_MO;
+}
+
+function calc4050(bY, bM, gender, hukou, quitAge, yrsOfFree, postBase) {
+  if (hukou !== 'beijing') return 0;
+  if (quitAge < (gender==='male' ? 50 : 40)) return 0;
+  return postBase * 0.30 * 0.60 * Math.min(36, yrsOfFree*12);
+}
+
+function calculate() {
+  const bY     = +document.getElementById('birth-year').value;
+  const bM     = +document.getElementById('birth-month').value;
+  const gender = document.getElementById('gender').value;
+  const hukou  = document.getElementById('hukou').value;
+  const yrsC   = +document.getElementById('years-contrib').value  || 0;
+  const acct   = +document.getElementById('personal-acct').value  || 0;
+  const cTier  = document.getElementById('contrib-tier').value;
+  const salary = +document.getElementById('salary').value         || 0;
+  const quitA  = +document.getElementById('quit-age').value       || 45;
+  const pTier  = document.getElementById('post-quit-tier').value;
+
+  const now = new Date();
+  const curAgeM  = (now.getFullYear()-bY)*12 + (now.getMonth()+1-bM);
+  const curAge   = curAgeM/12;
+  const retireM  = legalRetireMonths(bY, bM, gender);
+  const retireA  = retireM/12;
+  const curBase  = BASE[cTier];
+  const postBase = BASE[pTier];
+
+  const yrsToQuit = Math.max(0, quitA - curAge);
+  const yrsOfFree = Math.max(0, retireA - quitA);
+  const yrsToRet  = Math.max(0, retireA - curAge);
+
+  // Scenario A: quit at planned age
+  const acctAtQuit    = acct + curBase*0.08*yrsToQuit*12;
+  const acctRetire_A  = acctAtQuit + postBase*0.08*yrsOfFree*12;
+  const totalYrs_A    = yrsC + yrsToQuit + yrsOfFree;
+  const pen_A         = calcPension(totalYrs_A, acctRetire_A, retireM);
+
+  // Scenario B: work to retirement
+  const acctRetire_B  = acct + curBase*0.08*yrsToRet*12;
+  const totalYrs_B    = yrsC + yrsToRet;
+  const pen_B         = calcPension(totalYrs_B, acctRetire_B, retireM);
+
+  // Social insurance (flexible worker)
+  const monthlyFlex = postBase * 0.30;
+  const totalFlex   = monthlyFlex * yrsOfFree * 12;
+  const unemp       = calcUnemp(yrsC);
+  const sub4050     = calc4050(bY, bM, gender, hukou, quitA, yrsOfFree, postBase);
+  const totalOff    = unemp + sub4050;
+  const netSocial   = Math.max(0, totalFlex - totalOff);
+
+  // Opportunity cost
+  const salaryFore = salary * 12 * yrsOfFree;
+  const postRetYrs = Math.max(0, LIFE_EXP - retireA);
+  const penDiff    = Math.max(0, (pen_B.total - pen_A.total) * 12 * postRetYrs);
+  const totalOpp   = netSocial + salaryFore + penDiff;
+  const annualCost = yrsOfFree > 0 ? totalOpp / yrsOfFree : 0;
+
+  R = {
+    bY, bM, gender, hukou,
+    yrsC, acct, cTier, curBase,
+    salary, quitA, pTier, postBase,
+    curAge, retireA, retireM,
+    yrsToQuit, yrsOfFree, yrsToRet,
+    totalYrs_A, totalYrs_B,
+    pen_A, pen_B,
+    monthlyFlex, totalFlex, unemp, sub4050, totalOff, netSocial,
+    salaryFore, penDiff, totalOpp, annualCost
+  };
+
+  render(R);
+  showPage('page-results');
+}
+
+/* =========================================================
+   FORMATTERS
+========================================================= */
+const fmt   = n => '¥' + Math.round(n||0).toLocaleString('zh-CN');
+const fmtMo = n => fmt(n) + '/月';
+const fmtY  = n => (+n).toFixed(1) + ' 年';
+function fmtAge(m) {
+  const y = Math.floor(m/12), mo = Math.round(m%12);
+  return mo === 0 ? y + ' 岁' : y + ' 岁 ' + mo + ' 个月';
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function render(r) {
+  // Hero
+  document.getElementById('r-stmt').textContent = '你的 ' + fmtY(r.yrsOfFree) + ' 自由';
+  document.getElementById('r-num').textContent  = fmt(r.annualCost);
+  document.getElementById('r-foot').textContent = fmt(r.totalOpp) + ' ÷ ' + fmtY(r.yrsOfFree);
+
+  // Module 1: Retire age
+  const y = Math.floor(r.retireM/12), mo = Math.round(r.retireM%12);
+  document.getElementById('r-yr').textContent     = y;
+  document.getElementById('r-suffix').textContent = mo > 0 ? '岁 ' + mo + ' 个月' : '岁';
+  document.getElementById('r-mo').textContent     = '';
+  const gMap = { male:'男性', female_office:'女性（管理岗）', female_manual:'女性（工人岗）' };
+  document.getElementById('r-policy').textContent = gMap[r.gender] + ' · 2024渐进式延迟退休政策';
+
+  renderTL(r);
+  renderCmp(r);
+  renderTO(r);
+  renderCostBD(r);
+  renderOpp(r);
+  renderTraps(r);
+  renderDT(r);
+  renderAdvice(r);
+}
+
+function renderTL(r) {
+  const span = LIFE_EXP - r.curAge;
+  const w = n => Math.max(0, n/span*100).toFixed(1) + '%';
+
+  document.getElementById('tl-track').innerHTML = `
+    <div class="tl-seg tl-w" style="width:${w(r.yrsToQuit)}"></div>
+    <div class="tl-seg tl-f" style="width:${w(r.yrsOfFree)}"></div>
+    <div class="tl-seg tl-r" style="width:${w(LIFE_EXP-r.retireA)}"></div>
+  `;
+  document.getElementById('tl-dots').innerHTML = `
+    <div class="tl-node"><div class="tl-node-age">${Math.floor(r.curAge)}</div><div class="tl-node-lbl">现在</div></div>
+    <div class="tl-node"><div class="tl-node-age">${r.quitA}</div><div class="tl-node-lbl">退出</div></div>
+    <div class="tl-node"><div class="tl-node-age">${fmtAge(r.retireM)}</div><div class="tl-node-lbl">法定退休</div></div>
+    <div class="tl-node"><div class="tl-node-age">${LIFE_EXP}</div><div class="tl-node-lbl">预期</div></div>
+  `;
+}
+
+function renderCmp(r) {
+  document.getElementById('cmp').innerHTML = `
+    <div class="cmp-c on">
+      <div class="cmp-ch">方案 A · 按计划退出</div>
+      <div class="cmp-m"><div class="cmp-ml">退休月养老金</div><div class="cmp-mv g">${fmtMo(r.pen_A.total)}</div></div>
+      <div class="cmp-m"><div class="cmp-ml">自由年数</div><div class="cmp-mv g">${fmtY(r.yrsOfFree)}</div></div>
+      <div class="cmp-m"><div class="cmp-ml">灵活就业月缴</div><div class="cmp-mv r">${fmtMo(r.monthlyFlex)}</div></div>
+    </div>
+    <div class="cmp-c">
+      <div class="cmp-ch">方案 B · 干到退休</div>
+      <div class="cmp-m"><div class="cmp-ml">退休月养老金</div><div class="cmp-mv">${fmtMo(r.pen_B.total)}</div></div>
+      <div class="cmp-m"><div class="cmp-ml">自由年数</div><div class="cmp-mv">0 年</div></div>
+      <div class="cmp-m"><div class="cmp-ml">在职月薪</div><div class="cmp-mv g">${fmtMo(r.salary)}</div></div>
+    </div>
+  `;
+}
+
+function renderTO(r) {
+  document.getElementById('to').innerHTML = `
+    <div class="to-side">
+      <div class="to-emoji">🕰</div>
+      <div class="to-lbl">获得自由</div>
+      <div class="to-val" style="color:var(--green)">${fmtY(r.yrsOfFree)}</div>
+    </div>
+    <div class="to-mid">vs</div>
+    <div class="to-side">
+      <div class="to-emoji">💸</div>
+      <div class="to-lbl">年均代价</div>
+      <div class="to-val" style="color:var(--red)">${fmt(r.annualCost)}</div>
+    </div>
+  `;
+  document.getElementById('to-verdict').innerHTML =
+    `<strong>${fmtY(r.yrsOfFree)}</strong> 的自由，每年代价 <strong style="color:var(--gold-hi)">${fmt(r.annualCost)}</strong>。<br>这笔账值不值？只有你能回答。`;
+}
+
+function renderCostBD(r) {
+  const offPct = r.totalFlex > 0 ? Math.min(100, r.totalOff/r.totalFlex*100) : 0;
+  const netPct = (100-offPct).toFixed(0);
+  let h = `
+    <div class="bd">
+      <div class="bd-r"><div class="bd-l">养老保险（基数${(r.postBase/10000).toFixed(1)}万 × 20% × ${fmtY(r.yrsOfFree)}）</div><div class="bd-v">${fmt(r.postBase*0.20*r.yrsOfFree*12)}</div></div>
+      <div class="bd-r"><div class="bd-l">医疗保险（基数${(r.postBase/10000).toFixed(1)}万 × 10% × ${fmtY(r.yrsOfFree)}）</div><div class="bd-v">${fmt(r.postBase*0.10*r.yrsOfFree*12)}</div></div>
+      <div class="bd-r"><div class="bd-l">合计缴费</div><div class="bd-v">${fmt(r.totalFlex)}</div></div>
+  `;
+  if (r.unemp > 0)   h += `<div class="bd-r"><div class="bd-l">−&nbsp;失业保险金（${r.yrsC<5?12:r.yrsC<10?18:24}个月 × ¥2,250）</div><div class="bd-v g">−${fmt(r.unemp)}</div></div>`;
+  if (r.sub4050 > 0) h += `<div class="bd-r"><div class="bd-l">−&nbsp;4050补贴（60% × 最多3年）</div><div class="bd-v g">−${fmt(r.sub4050)}</div></div>`;
+  h += `
+      <div class="bd-bar-wrap">
+        <div class="bd-bar"><div class="bd-bar-f" style="width:${netPct}%"></div></div>
+        <div class="bd-bar-ls"><span>政策抵扣 ${offPct.toFixed(0)}%</span><span>需自付 ${netPct}%</span></div>
+      </div>
+      <div class="bd-tot"><span class="bd-tot-l">净社保成本</span><span class="bd-tot-v">${fmt(r.netSocial)}</span></div>
+    </div>
+  `;
+  document.getElementById('cost-bd').innerHTML = h;
+}
+
+function renderOpp(r) {
+  const py = Math.max(0, LIFE_EXP - r.retireA);
+  document.getElementById('opp-cost').innerHTML = `
+    <div class="bd">
+      <div class="bd-r">
+        <div class="bd-l">放弃的工资收入<br><span style="font-size:10px;color:var(--muted)">${fmtMo(r.salary)} × 12 × ${fmtY(r.yrsOfFree)}</span></div>
+        <div class="bd-v">${fmt(r.salaryFore)}</div>
+      </div>
+      <div class="bd-r">
+        <div class="bd-l">养老金差额损失<br><span style="font-size:10px;color:var(--muted)">差额 ${fmtMo(r.pen_B.total - r.pen_A.total)} × 12 × ${py.toFixed(0)}年</span></div>
+        <div class="bd-v">${fmt(r.penDiff)}</div>
+      </div>
+      <div class="bd-r"><div class="bd-l">净社保成本</div><div class="bd-v">${fmt(r.netSocial)}</div></div>
+      <div class="bd-tot"><span class="bd-tot-l">总机会成本</span><span class="bd-tot-v">${fmt(r.totalOpp)}</span></div>
+    </div>
+    <div class="opp-callout">
+      <div class="opp-cl">每年自由代价</div>
+      <div class="opp-cv">${fmt(r.annualCost)}</div>
+      <div class="opp-cf">= ${fmt(r.totalOpp)} ÷ ${fmtY(r.yrsOfFree)}</div>
+    </div>
+  `;
+}
+
+function renderTraps(r) {
+  const traps = [];
+  if (r.cTier === 'high' && r.yrsC >= 15)
+    traps.push({ c:'w', i:'⚠️', t:'高基数边际效益递减', d:`已缴 ${r.yrsC} 年，养老金计算更依赖年限。继续高基数缴费与收益不成比例。` });
+  if (r.yrsToRet > 5 && r.pen_B.total > r.pen_A.total)
+    traps.push({ c:'w', i:'⏳', t:'"多等几年"不一定更划算', d:`方案B月养老金仅多 ${fmtMo(r.pen_B.total-r.pen_A.total)}，但要放弃 ${fmtY(r.yrsOfFree)} 自由和 ${fmt(r.salaryFore)} 工资。` });
+  if (r.curAge >= 35)
+    traps.push({ c:'w', i:'🩺', t:'身体是最大的本钱', d:'长期高强度工作对35岁以上的健康损耗难以量化，却真实存在，财务账里算不进这部分隐性成本。' });
+  if (r.totalYrs_A < 20)
+    traps.push({ c:'d', i:'🚨', t:'缴费年限不足，养老金或无法领取', d:`按计划总缴费约 ${r.totalYrs_A.toFixed(1)} 年，低于建议最低20年。请延长缴费年限或调整退出年龄。` });
+
+  const el = document.getElementById('traps');
+  el.innerHTML = traps.length === 0
+    ? '<div class="no-trap">✓ NO_TRAPS_DETECTED — 未发现明显决策陷阱</div>'
+    : traps.map(t => `
+        <div class="trap ${t.c}">
+          <div class="trap-i">${t.i}</div>
+          <div><div class="trap-t">${t.t}</div><div class="trap-d">${t.d}</div></div>
+        </div>`).join('');
+}
+
+function renderDT(r) {
+  const py = Math.max(0, LIFE_EXP - r.retireA);
+  document.getElementById('detail-tbl').innerHTML = `
+    <thead>
+      <tr>
+        <th>指标</th>
+        <th style="color:var(--gold)">方案 A</th>
+        <th>方案 B</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>退休月养老金</td><td class="gold">${fmtMo(r.pen_A.total)}</td><td>${fmtMo(r.pen_B.total)}</td></tr>
+      <tr><td>基础养老金</td><td>${fmtMo(r.pen_A.basic)}</td><td>${fmtMo(r.pen_B.basic)}</td></tr>
+      <tr><td>个人账户养老金</td><td>${fmtMo(r.pen_A.personal)}</td><td>${fmtMo(r.pen_B.personal)}</td></tr>
+      <tr><td>自由年数</td><td class="grn">${fmtY(r.yrsOfFree)}</td><td>0 年</td></tr>
+      <tr><td>总缴费年限</td><td>${r.totalYrs_A.toFixed(1)} 年</td><td>${r.totalYrs_B.toFixed(1)} 年</td></tr>
+      <tr><td>社保自缴总额</td><td class="red">${fmt(r.totalFlex)}</td><td>单位承担</td></tr>
+      <tr><td>政策补贴抵扣</td><td class="grn">${fmt(r.totalOff)}</td><td>—</td></tr>
+      <tr><td>净社保成本</td><td>${fmt(r.netSocial)}</td><td>¥0</td></tr>
+      <tr><td>退休后余寿（估）</td><td colspan="2" style="text-align:right">${py.toFixed(0)} 年</td></tr>
+    </tbody>
+  `;
+}
+
+function renderAdvice(r) {
+  const titles = ['给年轻觉醒者', '给中年规划者', '给临退犹豫者'];
+  const bodies = [
+    `你拥有最宝贵的资产：时间。每年 ${fmt(r.annualCost)} 的自由代价是个大数，但如果这段时间能让你建立被动收入或真正热爱的事业，这笔账的逻辑会完全改变。建议在离职前，先让副业月收入稳定超过 ${fmtMo(r.monthlyFlex * 1.5)}，再做最终决定。`,
+    `中年离职的真实成本往往比数字更重。每年 ${fmt(r.annualCost)} 是财务账，但职场重返难度、医疗支出上升、子女教育高峰均不在其中。建议先建立至少 ${fmt(r.annualCost * 5)} 的流动储备，再评估可行性。`,
+    `距法定退休只剩 ${fmtY(r.yrsToRet)}，多缴一年可提升月养老金约 ${fmtMo(r.yrsToRet > 0 ? (r.pen_B.total-r.pen_A.total)/Math.max(r.yrsToRet,0.1) : 0)}。关键不是"值不值"，而是"身体还撑得住吗"。如果健康信号已在响，提前离开可能才是最理性的选择。`
+  ];
+
+  document.getElementById('advice-wrap').innerHTML = `
+    <div class="advice-mod">
+      <div class="advice-glow"></div>
+      <div class="advice-eyebrow">个性化建议</div>
+      <div class="advice-title">${titles[scenarioIdx]}</div>
+      <div class="advice-body">${bodies[scenarioIdx]}</div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
