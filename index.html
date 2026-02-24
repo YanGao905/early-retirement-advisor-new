@@ -93,12 +93,9 @@
       position: fixed; inset: 0; z-index: 9999;
       display: flex; align-items: center; justify-content: center;
       background: var(--bg);
-      transition: opacity 0.6s ease;
+      transition: opacity 0.9s ease;
     }
-    #splash-stage {
-      position: relative;
-    }
-    #splash-sizer {
+    #splash-text {
       font-family: 'Noto Serif SC', serif;
       font-weight: 900;
       font-size: min(47vw, 40vh);
@@ -106,20 +103,8 @@
       letter-spacing: -0.02em;
       line-height: 1;
       white-space: nowrap;
-      visibility: hidden; /* spacer only — sets stage dimensions */
-    }
-    .sp-tile {
-      font-family: 'Noto Serif SC', serif;
-      font-weight: 900;
-      font-size: min(47vw, 40vh);
-      color: var(--cream);
-      letter-spacing: -0.02em;
-      line-height: 1;
-      white-space: nowrap;
-      position: absolute;
-      top: 0; left: 0;
       opacity: 0;
-      will-change: transform;
+      transition: opacity 0.8s ease;
     }
 
     /* ---- Home elements: start hidden, JS reveals ---- */
@@ -463,9 +448,10 @@
     ====================================================================== */
     .res-cover {
       position: relative; overflow: hidden;
-      padding: 56px 28px 52px;
-      border-bottom: 1px solid var(--border);
-      min-height: 52vh;
+      margin: 20px 20px 0;
+      padding: 24px 24px 22px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
       display: flex; flex-direction: column; justify-content: flex-end;
     }
 
@@ -486,7 +472,7 @@
     }
 
     .res-back {
-      position: absolute; top: 32px; left: 28px;
+      position: absolute; top: 22px; left: 24px;
       font-family: 'DM Mono', monospace;
       font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--muted); cursor: pointer;
@@ -762,10 +748,7 @@
 <div id="page-home" class="page active">
   <!-- Splash -->
   <div id="splash">
-    <div id="splash-stage">
-      <div id="splash-sizer">自由</div>
-      <!-- tiles injected by JS -->
-    </div>
+    <div id="splash-text">自由</div>
   </div>
 
   <div class="home-masthead">
@@ -1473,101 +1456,45 @@ function renderAdvice(r) {
   `;
 }
 
-// ---- Splash animation ----
+// ---- Splash animation (film title card — Option B) ----
 function runSplash() {
-  const splash   = document.getElementById('splash');
-  const stage    = document.getElementById('splash-stage');
-  const sizer    = document.getElementById('splash-sizer');
-  const heroZiyu = document.getElementById('hero-ziyu');
-  const heroJihe = document.getElementById('hero-jihe');
+  const splash     = document.getElementById('splash');
+  const splashText = document.getElementById('splash-text');
+  const heroZiyu   = document.getElementById('hero-ziyu');
+  const heroJihe   = document.getElementById('hero-jihe');
 
   function revealEl(el, delay) {
     setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'none'; }, delay);
   }
 
-  // Build a 4×3 grid of clip-path tiles — each shows a slice of "自由"
-  const COLS = 4, ROWS = 3;
-  const tiles = [];
-
-  for (let i = 0; i < COLS * ROWS; i++) {
-    const c = i % COLS, r = Math.floor(i / COLS);
-    const tile = document.createElement('div');
-    tile.className = 'sp-tile';
-    tile.textContent = '自由';
-
-    // clip-path: inset(top right bottom left)
-    const t  = (r             / ROWS * 100).toFixed(2);
-    const ri = ((COLS - c - 1) / COLS * 100).toFixed(2);
-    const b  = ((ROWS - r - 1) / ROWS * 100).toFixed(2);
-    const l  = (c              / COLS * 100).toFixed(2);
-    tile.style.clipPath = `inset(${t}% ${ri}% ${b}% ${l}%)`;
-
-    // Random scattered position — some off-screen, some on
-    const rx = (Math.random() - 0.5) * 110;   // ±55vw
-    const ry = (Math.random() - 0.5) * 90;    // ±45vh
-    const ra = (Math.random() - 0.5) * 60;    // ±30deg
-    tile.style.transform = `translate(${rx}vw, ${ry}vh) rotate(${ra}deg)`;
-
-    stage.appendChild(tile);
-    tiles.push(tile);
-  }
-
-  // Phase 1 — scattered fragments appear staggered (like sparks)
+  // Phase 1: "自由" fades in (800ms transition)
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    tiles.forEach(tile => {
-      const delay = Math.random() * 400;
-      setTimeout(() => {
-        tile.style.transition = 'opacity 180ms ease';
-        tile.style.opacity = '1';
-      }, delay);
-    });
+    splashText.style.opacity = '1';
 
-    // Phase 2 — fragments converge to form the characters
-    // starts after scatter is visible (~600ms)
+    // Phase 2: hold 1400ms, then dissolve
     setTimeout(() => {
-      tiles.forEach(tile => {
-        const stagger = Math.random() * 220;
-        setTimeout(() => {
-          tile.style.transition = 'transform 680ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease';
-          tile.style.transform = 'none';
-        }, stagger);
+
+      // Pre-reveal heroZiyu silently behind the fading splash — no jump
+      heroZiyu.style.transition = 'none';
+      heroZiyu.style.opacity = '1';
+
+      // Fade out splash (900ms via CSS transition)
+      splash.style.opacity = '0';
+
+      // Content cascades in as the veil lifts
+      setTimeout(() => { heroJihe.style.opacity = '1'; },          300);
+      revealEl(document.querySelector('.home-masthead'),            200);
+      revealEl(document.querySelector('.hero-kicker'),              400);
+      revealEl(document.querySelector('.hero-rule'),                560);
+      revealEl(document.querySelector('.hero-copy'),                700);
+      revealEl(document.querySelector('.sc-header'),                880);
+      document.querySelectorAll('.sc-item').forEach((el, i) => {
+        revealEl(el, 1060 + i * 140);
       });
 
-      // Phase 3 — FLIP zoom-out to hero position
-      // all tiles land by: 220 + 680 = 900ms → hold 500ms → FLIP at 1400ms
-      setTimeout(() => {
-        const src   = sizer.getBoundingClientRect();
-        const tgt   = heroZiyu.getBoundingClientRect();
-        const scale = tgt.height / src.height;
-        const dx    = (tgt.left + tgt.width  / 2) - (src.left + src.width  / 2);
-        const dy    = (tgt.top  + tgt.height / 2) - (src.top  + src.height / 2);
+      setTimeout(() => { splash.style.display = 'none'; }, 920);
 
-        // Pre-reveal heroZiyu silently behind splash
-        heroZiyu.style.transition = 'none';
-        heroZiyu.style.opacity = '1';
-
-        // Zoom out AND dissolve simultaneously — tiles fade before landing,
-        // so the size mismatch is never visible
-        stage.style.transition =
-          'transform 720ms cubic-bezier(0.76, 0, 0.24, 1), opacity 360ms ease 260ms';
-        stage.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        stage.style.opacity   = '0';
-
-        // Cut splash when stage has dissolved; heroZiyu is already there
-        setTimeout(() => {
-          splash.style.display = 'none';
-          heroJihe.style.opacity = '1';
-          revealEl(document.querySelector('.home-masthead'), 80);
-          revealEl(document.querySelector('.hero-kicker'),   220);
-          revealEl(document.querySelector('.hero-rule'),     380);
-          revealEl(document.querySelector('.hero-copy'),     520);
-          revealEl(document.querySelector('.sc-header'),     700);
-          document.querySelectorAll('.sc-item').forEach((el, i) => {
-            revealEl(el, 880 + i * 140);
-          });
-        }, 720);
-      }, 1400);
-    }, 600);
+    }, 800 + 1400); // fade-in duration + hold
   }));
 }
 
