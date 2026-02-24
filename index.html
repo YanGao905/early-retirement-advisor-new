@@ -472,11 +472,11 @@
     }
 
     .res-back {
-      position: absolute; top: 22px; left: 24px;
       font-family: 'DM Mono', monospace;
       font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--muted); cursor: pointer;
       transition: color 0.15s; z-index: 1;
+      margin-bottom: 20px;
       -webkit-tap-highlight-color: transparent;
     }
     .res-back:hover { color: var(--gold); }
@@ -1094,12 +1094,27 @@ let R = null;
    INIT
 ========================================================= */
 (function init() {
-  const yr = document.getElementById('birth-year');
-  for (let y = new Date().getFullYear() - 22; y >= 1958; y--)
-    yr.innerHTML += `<option value="${y}"${y===1985?' selected':''}>${y} 年</option>`;
-  const mo = document.getElementById('birth-month');
-  for (let m = 1; m <= 12; m++)
-    mo.innerHTML += `<option value="${m}"${m===6?' selected':''}>${m} 月</option>`;
+  const yr   = document.getElementById('birth-year');
+  const yrFrag = document.createDocumentFragment();
+  for (let y = new Date().getFullYear() - 22; y >= 1958; y--) {
+    const o = document.createElement('option');
+    o.value = String(y);
+    o.textContent = y + ' 年';
+    if (y === 1985) o.selected = true;
+    yrFrag.appendChild(o);
+  }
+  yr.appendChild(yrFrag);
+
+  const mo   = document.getElementById('birth-month');
+  const moFrag = document.createDocumentFragment();
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement('option');
+    o.value = String(m);
+    o.textContent = m + ' 月';
+    if (m === 6) o.selected = true;
+    moFrag.appendChild(o);
+  }
+  mo.appendChild(moFrag);
 })();
 
 /* =========================================================
@@ -1118,7 +1133,7 @@ function selectScenario(idx) {
   b.textContent = sc.emoji + '  ' + sc.name;
 
   // Set default birth year based on scenario
-  const defaultYear = idx === 0 ? 1995 : idx === 2 ? 1980 : 1985;
+  const defaultYear = idx === 0 ? '1995' : idx === 2 ? '1980' : '1985';
   document.getElementById('birth-year').value = defaultYear;
 
   showStep(1);
